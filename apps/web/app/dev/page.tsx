@@ -18,7 +18,8 @@ const thStyle: CSSProperties  = { border: "1px solid #999", padding: "8px 14px",
 const tdStyle: CSSProperties  = { border: "1px solid #ccc", padding: "8px 14px", color: "#111" };
 const btnStyle: CSSProperties = { border: "1px solid #888", borderRadius: 4, padding: "6px 12px", background: "#f5f5f5", color: "#111", cursor: "pointer", fontFamily: "inherit", fontSize: "inherit" };
 
-const cowRowStyle = (bcs: number): CSSProperties => {
+const cowRowStyle = (bcs: number, status: string): CSSProperties => {
+  if (status === "calf") return {}; // calves are nursing-protected; suppress all malnutrition styling
   if (bcs < 3.0) return { background: "#fde8e8" }; // actively at malnutrition death risk
   if (bcs < 3.5) return { background: "#fef6e4" }; // approaching danger
   return {};
@@ -281,7 +282,7 @@ export default function DevPage() {
                   ? cow.matureWeightKg
                   : Math.round(cow.matureWeightKg * (0.064 + 0.936 * Math.min(1, cow.ageDays / 730)));
                 return (
-                <tr key={cow.id} style={cowRowStyle(cow.bodyConditionScore)}>
+                <tr key={cow.id} style={cowRowStyle(cow.bodyConditionScore, cow.status)}>
                   <td style={tdStyle}>{cow.id}</td>
                   <td style={tdStyle}>{cow.status}</td>
                   <td style={tdStyle}>{cow.sex}</td>

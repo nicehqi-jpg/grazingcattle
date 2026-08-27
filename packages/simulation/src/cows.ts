@@ -60,7 +60,7 @@ export const updateCowWeightOneHour = (cow: Cow, availableForageKgThisHour: numb
   const grazingRatio = hourlyIntakeNeededKg > 0 ? availableForageKgThisHour / hourlyIntakeNeededKg : 1;
   const intakeRatio =
     cow.status === "calf" && cow.ageDays < COW_LIFECYCLE.calfToJuvenileDays
-      ? Math.max(grazingRatio, COW_WEIGHT.maintenanceFraction)
+      ? Math.max(grazingRatio, 1.0)
       : grazingRatio;
 
   const expectedWeightKg = expectedWeightForAge(cow);
