@@ -143,6 +143,16 @@ const simulateOneHour = (farm: FarmState, events: FarmEvent[]): FarmState => {
   // this hour (looked up from forageAvailablePerCow, computed above by the
   // grazing pass) drives its weight, which drives its condition, then it
   // ages by an hour and gets checked for breeding/birth/death.
+
+  // Which paddocks contain at least one live breeding male? A female can
+  // only conceive if a bull is physically in the same paddock as her.
+  const paddocksWithBull = new Set(
+    farm.cows
+      .filter((c) => c.sex === "male" && (c.status === "breeding" || c.status === "old"))
+      .map((c) => c.currentPaddockId)
+      .filter((id): id is string => id != null),
+  );
+
   const newCalves: Cow[] = [];
   const updatedCows: Cow[] = farm.cows.map((cow) => {
     if (cow.status === "dead" || cow.status === "sold" || cow.status === "slaughtered") {
@@ -154,7 +164,8 @@ const simulateOneHour = (farm: FarmState, events: FarmEvent[]): FarmState => {
     let updatedCow = updateCowWeightOneHour(cow, availableForage);
     updatedCow = updateCowConditionOneHour(updatedCow);
     updatedCow = ageCowOneHour(updatedCow);
-    updatedCow = checkBreedingOneHour(updatedCow, farm.seed, simHour);
+    const hasBull = paddocksWithBull.has(updatedCow.currentPaddockId ?? "");
+    updatedCow = checkBreedingOneHour(updatedCow, farm.seed, simHour, hasBull);
 
     const birthResult = checkBirthOneHour(updatedCow, farm.seed, simHour, farm.id);
     updatedCow = birthResult.mother;

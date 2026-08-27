@@ -116,6 +116,29 @@ export default function DevPage() {
     }
   };
 
+  const moveCow = async (cowId: string, targetPaddockId: string) => {
+    if (!farm || inFlight.current) return;
+    inFlight.current = true;
+    setLoading(true);
+    setError(null);
+    try {
+      const res = await fetch(`/api/farms/${farm.id}/move-cow`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ cowId, targetPaddockId }),
+      });
+      if (!res.ok) throw new Error(`Move failed: ${res.status}`);
+      const data: { farm: FarmState; events: FarmEvent[] } = await res.json();
+      setFarm(data.farm);
+      setEvents(data.events.slice(0, MAX_EVENTS_SHOWN));
+    } catch (err) {
+      setError(err instanceof Error ? err.message : String(err));
+    } finally {
+      inFlight.current = false;
+      setLoading(false);
+    }
+  };
+
   const sellCow = async (cowId: string) => {
     if (!farm || inFlight.current) return;
     inFlight.current = true;
@@ -271,9 +294,21 @@ export default function DevPage() {
                   </td>
                   <td style={tdStyle}>{cow.currentPaddockId}</td>
                   <td style={tdStyle}>
-                    <button style={btnStyle} onClick={() => sellCow(cow.id)} disabled={loading}>
-                      Sell
-                    </button>
+                    <div style={{ display: "flex", gap: 6, alignItems: "center", flexWrap: "wrap" }}>
+                      <select
+                        defaultValue={cow.currentPaddockId ?? ""}
+                        onChange={(e) => moveCow(cow.id, e.target.value)}
+                        disabled={loading}
+                        style={{ fontFamily: "monospace", fontSize: 12 }}
+                      >
+                        {farm.paddocks.map((p) => (
+                          <option key={p.id} value={p.id}>{p.name}</option>
+                        ))}
+                      </select>
+                      <button style={btnStyle} onClick={() => sellCow(cow.id)} disabled={loading}>
+                        Sell
+                      </button>
+                    </div>
                   </td>
                 </tr>
                 );

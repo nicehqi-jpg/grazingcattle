@@ -143,12 +143,18 @@ export const ageCowOneHour = (cow: Cow): Cow => {
  * modifier - poor pasture management reduces reproduction over time, since
  * nutritionModifier is derived from body condition (itself driven by forage).
  */
-export const checkBreedingOneHour = (cow: Cow, farmSeed: string, simHour: number): Cow => {
+export const checkBreedingOneHour = (
+  cow: Cow,
+  farmSeed: string,
+  simHour: number,
+  hasBullInPaddock: boolean,
+): Cow => {
   const isEligible =
     cow.sex === "female" &&
     (cow.status === "breeding" || cow.status === "productive") &&
     !cow.pregnant &&
-    cow.health > 0.5;
+    cow.health > 0.5 &&
+    hasBullInPaddock;
 
   if (!isEligible) return cow;
 
