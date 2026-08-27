@@ -235,12 +235,17 @@ export default function DevPage() {
                 <th style={thStyle}>Weight (kg)</th>
                 <th style={thStyle}>BCS</th>
                 <th style={thStyle}>Health</th>
+                <th style={thStyle}>Pregnant</th>
                 <th style={thStyle}>Paddock</th>
                 <th style={thStyle}></th>
               </tr>
             </thead>
             <tbody>
-              {liveCows.map((cow) => (
+              {liveCows.map((cow) => {
+                const daysLeft = cow.pregnant && cow.pregnancyDays != null
+                  ? Math.max(0, Math.ceil(283 - cow.pregnancyDays))
+                  : null;
+                return (
                 <tr key={cow.id}>
                   <td style={tdStyle}>{cow.id}</td>
                   <td style={tdStyle}>{cow.status}</td>
@@ -249,6 +254,11 @@ export default function DevPage() {
                   <td style={tdStyle}>{cow.weightKg.toFixed(0)} <span style={{ color: "#999" }}>/ {cow.matureWeightKg} kg</span></td>
                   <td style={tdStyle}>{cow.bodyConditionScore.toFixed(1)} <span style={{ color: "#999" }}>/ 9</span></td>
                   <td style={tdStyle}>{cow.health.toFixed(2)} <span style={{ color: "#999" }}>/ 1.0</span></td>
+                  <td style={tdStyle}>
+                    {daysLeft !== null
+                      ? <span style={{ color: "#b36b00" }}>🐄 {daysLeft}d left</span>
+                      : <span style={{ color: "#999" }}>—</span>}
+                  </td>
                   <td style={tdStyle}>{cow.currentPaddockId}</td>
                   <td style={tdStyle}>
                     <button style={btnStyle} onClick={() => sellCow(cow.id)} disabled={loading}>
@@ -256,7 +266,8 @@ export default function DevPage() {
                     </button>
                   </td>
                 </tr>
-              ))}
+                );
+              })}
             </tbody>
           </table>
 
