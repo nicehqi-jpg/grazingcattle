@@ -18,6 +18,12 @@ const thStyle: CSSProperties  = { border: "1px solid #999", padding: "8px 14px",
 const tdStyle: CSSProperties  = { border: "1px solid #ccc", padding: "8px 14px", color: "#111" };
 const btnStyle: CSSProperties = { border: "1px solid #888", borderRadius: 4, padding: "6px 12px", background: "#f5f5f5", color: "#111", cursor: "pointer", fontFamily: "inherit", fontSize: "inherit" };
 
+const cowRowStyle = (bcs: number): CSSProperties => {
+  if (bcs < 3.0) return { background: "#fde8e8" }; // actively at malnutrition death risk
+  if (bcs < 3.5) return { background: "#fef6e4" }; // approaching danger
+  return {};
+};
+
 const paddockStats = (farm: FarmState, paddock: Paddock) => {
   const ids = new Set(paddock.cellIds);
   const cells = farm.cells.filter((c) => ids.has(c.id));
@@ -246,13 +252,17 @@ export default function DevPage() {
                   ? Math.max(0, Math.ceil(283 - cow.pregnancyDays))
                   : null;
                 return (
-                <tr key={cow.id}>
+                <tr key={cow.id} style={cowRowStyle(cow.bodyConditionScore)}>
                   <td style={tdStyle}>{cow.id}</td>
                   <td style={tdStyle}>{cow.status}</td>
                   <td style={tdStyle}>{cow.sex}</td>
                   <td style={tdStyle}>{(cow.ageDays / 365).toFixed(1)}</td>
                   <td style={tdStyle}>{cow.weightKg.toFixed(0)} <span style={{ color: "#999" }}>/ {cow.matureWeightKg} kg</span></td>
-                  <td style={tdStyle}>{cow.bodyConditionScore.toFixed(1)} <span style={{ color: "#999" }}>/ 9</span></td>
+                  <td style={tdStyle}>
+                    {cow.bodyConditionScore.toFixed(1)} <span style={{ color: "#999" }}>/ 9</span>
+                    {cow.bodyConditionScore < 3.0 && <span style={{ marginLeft: 6, color: "#c0392b", fontWeight: 600 }}>⚠ dying</span>}
+                    {cow.bodyConditionScore >= 3.0 && cow.bodyConditionScore < 3.5 && <span style={{ marginLeft: 6, color: "#b07d00" }}>⚠ at risk</span>}
+                  </td>
                   <td style={tdStyle}>{cow.health.toFixed(2)} <span style={{ color: "#999" }}>/ 1.0</span></td>
                   <td style={tdStyle}>
                     {daysLeft !== null
