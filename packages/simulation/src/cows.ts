@@ -50,8 +50,18 @@ export const updateCowWeightOneHour = (cow: Cow, availableForageKgThisHour: numb
   // half", 0 means "got nothing". availableForageKgThisHour comes from
   // grazing.ts's forageReceivedPerCow — it already accounts for a
   // grazed-down paddock limiting what this cow could actually eat.
+  //
+  // Calves still nursing (status === "calf", ageDays < calfToJuvenileDays)
+  // get a milk supplement that floors their effective intake at maintenance.
+  // This reflects the real-world behaviour where a calf's nutrition is
+  // largely independent of pasture quality for the first ~90 days. Once
+  // weaned (status = "juvenile"), they're fully dependent on grass like any
+  // other animal.
+  const grazingRatio = hourlyIntakeNeededKg > 0 ? availableForageKgThisHour / hourlyIntakeNeededKg : 1;
   const intakeRatio =
-    hourlyIntakeNeededKg > 0 ? availableForageKgThisHour / hourlyIntakeNeededKg : 1;
+    cow.status === "calf" && cow.ageDays < COW_LIFECYCLE.calfToJuvenileDays
+      ? Math.max(grazingRatio, COW_WEIGHT.maintenanceFraction)
+      : grazingRatio;
 
   const expectedWeightKg = expectedWeightForAge(cow);
 

@@ -274,17 +274,26 @@ export default function DevPage() {
                 const daysLeft = cow.pregnant && cow.pregnancyDays != null
                   ? Math.max(0, Math.ceil(283 - cow.pregnancyDays))
                   : null;
+                // For young animals show weight vs age-expected weight, not mature weight.
+                // expectedWeight mirrors the formula in cows.ts: birthFraction=0.064, maturityDays=730.
+                const isAdult = cow.ageDays >= 730;
+                const expectedWeight = isAdult
+                  ? cow.matureWeightKg
+                  : Math.round(cow.matureWeightKg * (0.064 + 0.936 * Math.min(1, cow.ageDays / 730)));
                 return (
                 <tr key={cow.id} style={cowRowStyle(cow.bodyConditionScore)}>
                   <td style={tdStyle}>{cow.id}</td>
                   <td style={tdStyle}>{cow.status}</td>
                   <td style={tdStyle}>{cow.sex}</td>
                   <td style={tdStyle}>{(cow.ageDays / 365).toFixed(1)}</td>
-                  <td style={tdStyle}>{cow.weightKg.toFixed(0)} <span style={{ color: "#999" }}>/ {cow.matureWeightKg} kg</span></td>
+                  <td style={tdStyle}>
+                    {cow.weightKg.toFixed(0)} <span style={{ color: "#999" }}>/ {expectedWeight} kg</span>
+                    {!isAdult && <span style={{ color: "#999", fontSize: 11 }}> (age-exp)</span>}
+                  </td>
                   <td style={tdStyle}>
                     {cow.bodyConditionScore.toFixed(1)} <span style={{ color: "#999" }}>/ 9</span>
-                    {cow.bodyConditionScore < 3.0 && <span style={{ marginLeft: 6, color: "#c0392b", fontWeight: 600 }}>⚠ dying</span>}
-                    {cow.bodyConditionScore >= 3.0 && cow.bodyConditionScore < 3.5 && <span style={{ marginLeft: 6, color: "#b07d00" }}>⚠ at risk</span>}
+                    {cow.status !== "calf" && cow.bodyConditionScore < 3.0 && <span style={{ marginLeft: 6, color: "#c0392b", fontWeight: 600 }}>⚠ dying</span>}
+                    {cow.status !== "calf" && cow.bodyConditionScore >= 3.0 && cow.bodyConditionScore < 3.5 && <span style={{ marginLeft: 6, color: "#b07d00" }}>⚠ at risk</span>}
                   </td>
                   <td style={tdStyle}>{cow.health.toFixed(2)} <span style={{ color: "#999" }}>/ 1.0</span></td>
                   <td style={tdStyle}>
